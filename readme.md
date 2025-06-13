@@ -158,21 +158,19 @@ Certifique-se de que ele lê `process.argv` e passa corretamente para `worker.li
 
 ---
 
----
-
 ## 📁 Estrutura de Diretórios (raiz)
 
 | Caminho / Pasta             | Descrição                                                                                                 |
 |-----------------------------|-----------------------------------------------------------------------------------------------------------|
 | `app/`                      | Lógica principal da aplicação organizada por domínio.                                                     |
 | `app/Commands/`             | Comandos CLI como `migrate`, `seed`, `dispatch`, executados com `node command <comando>`.                |
-| `app/Http/`                 | Código relacionado à API HTTP.                                                                            |
+| `app/Http/`                 | Código relacionado as requisições HTTP.                                                                            |
 | `app/Http/Controllers/`     | Controllers que lidam com requisições e respostas das rotas.                                              |
 | `app/Http/Middlewares/`     | Middlewares como autenticação, validação e logger HTTP.                                                   |
 | `app/Jobs/`                 | Jobs consumidos pelos workers. Cada arquivo representa uma tarefa isolada e assíncrona.                   |
 | `app/Models/`               | Models Sequelize que representam e manipulam tabelas do banco de dados.                                  |
-| `bootstrap/`                | Inicializações específicas do projeto, como setup global de helpers ou containers.                        |
-| `config/`                   | Arquivos de configuração para serviços como RabbitMQ, Postgres, JWT, etc.                                 |
+| `bootstrap/`                | Inicializações específicas do projeto, como setup global de helpers, constantes e variáveis de ambiente.                        |
+| `config/`                   | Arquivos de configuração para serviços como RabbitMQ, Postgres, JWT, Sequelize,  swagger, etc.                                 |
 | `Core/`                     | Núcleo do sistema, como se fosse uma lib interna criada por nós mesmos. Carrega bastante complexidade.    |
 | `Core/WorkerCore/`          | Lógica de workers: registro, execução, escuta de filas.                                                   |
 | `Core/CommandCore/`         | Execução e estrutura dos comandos CLI.                                                                   |
@@ -182,7 +180,7 @@ Certifique-se de que ele lê `process.argv` e passa corretamente para `worker.li
 | `database/migrations/`      | Scripts de criação/modificação de tabelas versionados.                                                    |
 | `database/seeds/`           | Scripts para popular dados iniciais no banco.                                                             |
 | `docker/`                   | Dockerfiles específicos para cada serviço da aplicação.                                                   |
-| `docs/`                     | (Opcional) Documentação extra, slides ou anotações da aula.                                               |
+| `docs/`                     | (Opcional) Documentação de apis swagger em json.                                               |
 | `node_modules/`             | Pacotes npm instalados automaticamente.                                                                   |
 | `public/`                   | Arquivos públicos (como `index.html`) servidos diretamente por HTTP.                                      |
 | `routes/`                   | Arquivos de definição de rotas, geralmente organizados por entidade.                                      |
