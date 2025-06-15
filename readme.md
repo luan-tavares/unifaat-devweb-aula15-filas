@@ -13,6 +13,7 @@
 - [Acesse](#acesse)
 - [📦 Bibliotecas Utilizadas](#bibliotecas-utilizadas)
 - [📁 Estrutura de Diretórios (raiz)](#estrutura-de-diretorios-raiz)
+- [🐳 Containers e Imagens Docker](#containers-e-imagens-docker)
 
 ## Instalação e Execução <a name="instalacao-e-execucao"></a>
 
@@ -301,3 +302,53 @@ Se não for informado, o padrão é `1`.
 | `readme.md`                 | Documentação principal do projeto (este arquivo).                                                         |
 | `server.js`                 | Entry point HTTP da aplicação. Sobe o Express e inicializa a API.                                         |
 | `worker`                    | Entrypoint dos workers/consumers. Sobe escutando filas específicas do RabbitMQ.                           |
+
+## 🐳 Containers e Imagens Docker <a name="containers-e-imagens-docker"></a>
+
+Este projeto utiliza uma arquitetura baseada em múltiplos containers Docker, orquestrados via Docker Compose. Abaixo está a descrição de cada serviço, imagem, volume e porta exposta.
+
+### 🔧 Containers da Aplicação
+
+| Container               | Dockerfile                             | Função                                                                 |
+|-------------------------|-----------------------------------------|------------------------------------------------------------------------|
+| `nodeweb-container`     | `docker/node-web/Dockerfile.dev`        | API HTTP principal (`server.js`). Exposto na porta **3000** (interna). |
+| `nodecli-container`     | `docker/node-cli/Dockerfile`            | Executa comandos como `migrate`, `seed`, `dispatch`. Container efêmero. |
+| `nodeworker-container`  | `docker/node-worker/Dockerfile`         | Worker que consome jobs da fila RabbitMQ.                              |
+
+### 🗄️ Containers de Infraestrutura
+
+| Container              | Imagem Base               | Função                                                                 | Porta Interna |
+|------------------------|---------------------------|------------------------------------------------------------------------|---------------|
+| `postgres-container`   | `postgres:15`             | Banco de dados PostgreSQL usado pela aplicação.                        | **5432**      |
+| `rabbitmq-container`   | `rabbitmq:3-management`   | Broker de mensagens AMQP (com UI Web em `/`).                          | **5672**, **15672** |
+| `nginx-container`      | `nginx:1.25-alpine`       | Proxy reverso que expõe a API HTTP para fora.                          | **8080**      |
+
+### 💾 Volumes Persistentes
+
+| Volume                         | Utilizado por                      | Finalidade                                          |
+|--------------------------------|------------------------------------|-----------------------------------------------------|
+| `node-modules-aula-15-volume` | `nodeweb`, `nodecli`, `nodeworker`  | Evita reinstalação de dependências a cada build     |
+| `postgres-data-aula-15-volume`| `postgres-container`                | Persistência dos dados do banco PostgreSQL          |
+| `rabbitmq-data-aula-15-volume`| `rabbitmq-container`                | Persistência das filas e mensagens RabbitMQ         |
+
+### 🌐 Redes
+
+Todos os containers estão conectados à rede Docker personalizada:
+
+```
+project-network
+```
+
+Isso permite comunicação interna entre os serviços via `nome-do-container`.
+
+### 🌍 Portas Expostas Externamente
+
+| Serviço     | Porta Interna | Porta Externa | Acesso Externo                      |
+|-------------|----------------|----------------|-------------------------------------|
+| NGINX       | 80             | **8080**       | http://localhost:8080               |
+| PostgreSQL  | 5432           | **6789**       | usado por clients/ORM               |
+| RabbitMQ    | 5672, 15672    | **2765**, **15672** | AMQP e painel web http://localhost:15672 |
+
+---
+
+Essas definições estão configuradas em `docker-compose.yml` e os arquivos de build estão em `./docker/`.
