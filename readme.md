@@ -228,11 +228,11 @@ docker compose run --rm nodeworker-container --queue=minha-fila --concurrency=1
 
 ⚙️ Argumentos CLI:
 
---queue (opcional)  
+**--queue (opcional)**
 Substitua `minha-fila` pelo nome da fila desejada, como `emails`, `relatorios`, `webhooks`, etc.  
 Se não for informado, usará a fila `default`.
 
---concurrency (opcional)  
+**--concurrency (opcional)**  
 Define quantos jobs podem ser processados ao mesmo tempo por esse worker.  
 Se não for informado, o padrão é `1`.
 
