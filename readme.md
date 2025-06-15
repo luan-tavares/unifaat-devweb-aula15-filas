@@ -40,7 +40,14 @@
    JWT_SECRET=super_secreta
    ```
 
-5. Subir a aplicação com Docker Compose:
+
+5. Instalar as dependências:
+
+   ```sh
+   npm install
+   ```
+
+6. Subir a aplicação com Docker Compose:
 
    > Docker Compose tradicional:
 
@@ -54,7 +61,7 @@
    docker compose up --build
    ```
 
-6. Executar as migrations utilizando UM desses comandos:
+7. Executar as migrations utilizando UM desses comandos:
 
    > Container (Docker Compose tradicional):
 
@@ -74,7 +81,7 @@
    node command migrate
    ```
 
-7. Executar as seeds utilizando UM desses comandos:
+8. Executar as seeds utilizando UM desses comandos:
 
    > Container (Docker Compose tradicional):
 
