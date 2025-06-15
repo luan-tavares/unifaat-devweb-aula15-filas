@@ -1,6 +1,20 @@
-# Unifaat :: Devweb :: Aula 15 - Filas
+# Unifaat :: Devweb :: Aula 15 - Filas <a name="unifaat-devweb-aula-15---filas"></a>
 
-## Instalação e Execução
+## 📑 Sumário
+
+- [Instalação e Execução](#instalacao-e-execucao)
+- [🚀 Como Criar Elementos](#como-criar-elementos)
+  - [🧩 Criar uma Rota](#criar-uma-rota)
+  - [📦 Criar um Controller](#criar-um-controller)
+  - [⛓️ Criar um Middleware](#criar-um-middleware)
+  - [🧵 Criar um Job](#criar-um-job)
+  - [💻 Criar um Command](#criar-um-command)
+- [🧵 Subindo um Worker (Consumer)](#subindo-um-worker-consumer)
+- [Acesse](#acesse)
+- [📦 Bibliotecas Utilizadas](#bibliotecas-utilizadas)
+- [📁 Estrutura de Diretórios (raiz)](#estrutura-de-diretorios-raiz)
+
+## Instalação e Execução <a name="instalacao-e-execucao"></a>
 
 ### Siga os passos abaixo para rodar o projeto via Docker:
 
@@ -39,7 +53,6 @@
    RABBITMQ_PASSWORD=senha_rabbit
    JWT_SECRET=super_secreta
    ```
-
 
 5. Instalar as dependências:
 
@@ -101,56 +114,136 @@
    node command seed
    ```
 
----
+## 🚀 Como Criar Elementos <a name="como-criar-elementos"></a>
 
-## Subindo um Worker (Consumer)
+### 🧩 Criar uma Rota <a name="criar-uma-rota"></a>
 
-Após rodar migrations e seeds, você pode subir um **worker/consumer** para escutar uma fila específica e processar os jobs associados.
+1. Defina o path da rota em `routes/web.js` ou `routes/api.js`
+2. Associe um controller da `app/Http/Controllers/`
 
-### ✅ Via Host (fora do container)
+Exemplo (`routes/api.js`):
+```js
+router.get('/exemplo', MeuController);
+```
+
+### 📦 Criar um Controller <a name="criar-um-controller"></a>
+
+1. Crie um novo arquivo em `app/Http/Controllers/...`
+
+```js
+export default async function(request, response) {
+  ...
+  # Minha Lógica
+  ...
+  response.status(200).json({"success": "Minha resposta"});
+}
+```
+
+### ⛓️ Criar um Middleware <a name="criar-um-middleware"></a>
+
+Adicione em `app/Http/Middlewares/`, por exemplo:
+
+```js
+export default async function (request, response, next) {
+  console.log(`[${request.method}] ${request.url}`);
+  next();
+}
+```
+
+Depois registre na rota.
+
+### 🧵 Criar um Job <a name="criar-um-job"></a>
+
+1. Crie um arquivo em `app/Jobs/` (Exemplo ./app/Jobs/MeuJob.js):
+
+```js
+import createJob from '../../Core/QueueCore/createJob.js';
+
+export default createJob({
+    name: "FirstJob",
+    handle: async (payload) => {
+       ...
+       # Miha lógica
+       ...
+    }
+});
+```
+
+2. Despache usando o método `dispatch`:
+
+```js
+await MeuJob.dispatch(
+  {...},
+  "minha-fila"
+);
+```
+
+### 💻 Criar um Command <a name="criar-um-command"></a>
+
+1. Crie um arquivo em `app/Commands/NomeDoCommand.js`:
+
+```js
+export default {
+    name: 'nome-comando',
+    description: 'minha descrição',
+    arguments: {
+        ...
+    },
+
+    handle: async function ({ argument1 }) {
+        console.log(argument1);
+        ...
+        # Minha lógica
+        ...
+    }
+}
+```
+
+2. Execute via terminal:
 
 ```sh
+node command meu-comando
+```
+
+## 🧵 Subindo um Worker (Consumer) <a name="subindo-um-worker-consumer"></a>
+
+Após rodar migrations e seeds, você pode subir um worker (consumer) para escutar uma fila específica e processar os jobs associados.
+
+✅ Via Host (fora do container):
+```bash
 node worker --queue=minha-fila --concurrency=1
 ```
 
-### ✅ Via Docker (container efêmero)
+✅ Via Docker (container efêmero):
 
-> Docker Compose tradicional:
-
-```sh
+Docker Compose tradicional:
+```bash
 docker-compose run --rm nodeworker-container --queue=minha-fila --concurrency=1
 ```
 
-> Docker Compose moderno:
-
-```sh
+Docker Compose moderno:
+```bash
 docker compose run --rm nodeworker-container --queue=minha-fila --concurrency=1
 ```
 
-⚠️ Argumentos cli
+⚙️ Argumentos CLI:
 
-***`--queue`***:<br>
-**Opcional**<br>
-Substitua `minha-fila` pelo nome da fila desejada, como `emails`, `relatorios`, `webhooks`, etc.<br>
-Caso o parâmetro não existir, ele conectará com a fila `default`
+--queue (opcional)  
+Substitua `minha-fila` pelo nome da fila desejada, como `emails`, `relatorios`, `webhooks`, etc.  
+Se não for informado, usará a fila `default`.
 
-***`--concurrency`***:<br>
-**Opcional**<br>
-Substitua `1` pelo quantidade de jobs que podem ser processados ao mesmo tempo **EM UM ÚNICO WORKER**.<br>
-Caso o parâmetro não existir, ele será `1`
+--concurrency (opcional)  
+Define quantos jobs podem ser processados ao mesmo tempo por esse worker.  
+Se não for informado, o padrão é `1`.
 
----
-
-## Acesse
+## Acesse <a name="acesse"></a>
 
 - Servidor: [http://localhost:8080](http://localhost:8080)
 - Documentação da API: [http://localhost:8080/docs](http://localhost:8080/docs)
 
 **Importante:** O arquivo `./Insomnia.yml` DEVE ser utilizado no Insomnia para testar as rotas.
 
----
-
-## 📦 Bibliotecas Utilizadas
+## 📦 Bibliotecas Utilizadas <a name="bibliotecas-utilizadas"></a>
 
 | Biblioteca            | Finalidade                                                                 |
 |-----------------------|----------------------------------------------------------------------------|
@@ -170,31 +263,29 @@ Caso o parâmetro não existir, ele será `1`
 | `amqplib`             | Biblioteca cliente para comunicação com RabbitMQ via protocolo AMQP.       |
 | `nodemon`             | Ferramenta que reinicia automaticamente a aplicação ao detectar mudanças.  |
 
----
-
-## 📁 Estrutura de Diretórios (raiz)
+## 📁 Estrutura de Diretórios (raiz) <a name="estrutura-de-diretorios-raiz"></a>
 
 | Caminho / Pasta             | Descrição                                                                                                 |
 |-----------------------------|-----------------------------------------------------------------------------------------------------------|
 | `app/`                      | Lógica principal da aplicação organizada por domínio.                                                     |
 | `app/Commands/`             | Comandos CLI como `migrate`, `seed`, `dispatch`, executados com `node command <comando>`.                |
-| `app/Http/`                 | Código relacionado as requisições HTTP.                                                                            |
+| `app/Http/`                 | Código relacionado as requisições HTTP.                                                                   |
 | `app/Http/Controllers/`     | Controllers que lidam com requisições e respostas das rotas.                                              |
 | `app/Http/Middlewares/`     | Middlewares como autenticação, validação e logger HTTP.                                                   |
 | `app/Jobs/`                 | Jobs consumidos pelos workers. Cada arquivo representa uma tarefa isolada e assíncrona.                   |
 | `app/Models/`               | Models Sequelize que representam e manipulam tabelas do banco de dados.                                  |
-| `bootstrap/`                | Inicializações específicas do projeto, como setup global de helpers, constantes e variáveis de ambiente.                        |
-| `config/`                   | Arquivos de configuração para serviços como RabbitMQ, Postgres, JWT, Sequelize,  swagger, etc.                                 |
-| `Core/`                     | Núcleo do sistema, como se fosse uma lib interna criada por nós mesmos. Carrega bastante complexidade.    |
-| `Core/QueueCore/`          | Lógica de workers: registro, execução, escuta de filas.                                                   |
-| `Core/CommandCore/`         | Execução e estrutura dos comandos CLI.                                                                   |
-| `Core/MigrationCore/`       | Lógica por trás das migrations via CLI.                                                                  |
-| `Core/SeedCore/`            | Lógica por trás das seeds via CLI.                                                                       |
+| `bootstrap/`                | Inicializações específicas do projeto, como setup global de helpers, constantes e variáveis de ambiente.  |
+| `config/`                   | Arquivos de configuração para serviços como RabbitMQ, Postgres, JWT, Sequelize, Swagger, etc.             |
+| `Core/`                     | Núcleo do sistema, como se fosse uma lib interna criada por nós mesmos.                                   |
+| `Core/QueueCore/`           | Lógica de workers: registro, execução, escuta de filas.                                                   |
+| `Core/CommandCore/`         | Execução e estrutura dos comandos CLI.                                                                    |
+| `Core/MigrationCore/`       | Lógica por trás das migrations via CLI.                                                                   |
+| `Core/SeedCore/`            | Lógica por trás das seeds via CLI.                                                                        |
 | `Core/RoutesCore/`          | Registro e estrutura das rotas carregadas dinamicamente.                                                  |
 | `database/migrations/`      | Scripts de criação/modificação de tabelas versionados.                                                    |
 | `database/seeds/`           | Scripts para popular dados iniciais no banco.                                                             |
 | `docker/`                   | Dockerfiles específicos para cada serviço da aplicação.                                                   |
-| `docs/`                     | (Opcional) Documentação de apis swagger em json.                                               |
+| `docs/`                     | (Opcional) Documentação de APIs Swagger em JSON.                                                          |
 | `node_modules/`             | Pacotes npm instalados automaticamente.                                                                   |
 | `public/`                   | Arquivos públicos (como `index.html`) servidos diretamente por HTTP.                                      |
 | `routes/`                   | Arquivos de definição de rotas, geralmente organizados por entidade.                                      |
@@ -209,4 +300,4 @@ Caso o parâmetro não existir, ele será `1`
 | `package-lock.json`         | Trava exata das versões das dependências instaladas.                                                      |
 | `readme.md`                 | Documentação principal do projeto (este arquivo).                                                         |
 | `server.js`                 | Entry point HTTP da aplicação. Sobe o Express e inicializa a API.                                         |
-| `worker`                    | Entrypoint dos workers/consumers. Sobe escutando filas específicas do RabbitMQ.                          |
+| `worker`                    | Entrypoint dos workers/consumers. Sobe escutando filas específicas do RabbitMQ.                           |

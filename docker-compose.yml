@@ -115,8 +115,8 @@ services:
   rabbitmq-container:
     image: rabbitmq:3.13.1-management-alpine
     ports:
-      - "${RABBITMQ_PORT}:5672"     # Porta para conexão com a fila (producers/consumers)
-      - "15672:15672"   # Porta do painel de gerenciamento web
+      - "${RABBITMQ_PORT}:5672"    # Porta para conexão com a fila (producers/consumers)
+      - "15672:15672"              # Porta do painel de gerenciamento web
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
