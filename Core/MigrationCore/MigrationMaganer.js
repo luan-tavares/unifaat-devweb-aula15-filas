@@ -1,28 +1,13 @@
-import db from '../config/db.js';
-import "../bootstrap/app.js";
-import getFilesWithContents from './getFilesWithContents.js';
+import db from '../../config/db.js';
+import getFilesWithContents from '../getFilesWithContents.js';
+import getExecutedMigrations from './getExecutedMigrations.js';
+import getLastStep from './getLastStep.js';
 
 export default async function createMigrationManager(dir) {
 
     const files = await getFilesWithContents(dir);
 
-    async function getLastStep() {
-        const res = await db.query('SELECT MAX(step) AS max FROM migrations');
-        const max = res.rows[0].max;
-        return (max ?? 0);
-    }
-
-    const executedMigrations = await (async function () {
-        const { rows } = await db.query('SELECT name, step FROM migrations ORDER BY id DESC');
-
-        const result = [];
-
-        for (const row of rows) {
-            result.push([row.name, row.step]);
-        }
-
-        return Object.fromEntries(result);
-    })();
+    const executedMigrations = await getExecutedMigrations();
 
     const lastStep = await getLastStep();
 

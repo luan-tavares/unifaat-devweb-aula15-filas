@@ -3,10 +3,9 @@ import express from 'express';
 import path from 'path';
 import swaggerUi from 'swagger-ui-express';
 
-
 import ListPublicFilesController from '../app/Http/Controllers/ListPublicFilesController.js';
 import DateController from '../app/Http/Controllers/DateController.js';
-import swagger from '../config/swagger.js';
+import swaggerGenerate from '../Core/SwaggerCore/swaggerGenerate.js';
 
 export default (function () {
 
@@ -21,7 +20,7 @@ export default (function () {
     router.get('/', ListPublicFilesController);
 
     // Documentação Swagger
-    router.use('/docs', swaggerUi.serve, swaggerUi.setup(swagger));
+    router.use('/docs', swaggerUi.serve, swaggerGenerate);
 
     router.get('/date', DateController);
 

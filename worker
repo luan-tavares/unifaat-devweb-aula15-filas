@@ -3,7 +3,7 @@ import path from "path";
 import createWorker from "./Core/QueueCore/createWorker.js";
 import "./bootstrap/app.js";
 import initRelations from "./config/sequelize_relations.js";
-import resolveQueue from "./Core/QueueCore/resolveQueue.js";
+import resolveParams from "./Core/QueueCore/resolveParams.js";
 
 (async function () {
 
@@ -13,8 +13,8 @@ import resolveQueue from "./Core/QueueCore/resolveQueue.js";
 
     const worker = await createWorker(dir);
 
-    const queue = resolveQueue();
+    const { queue, concurrency } = resolveParams();
 
-    await worker.listen(queue);
+    await worker.listen(queue, concurrency);
 
 })();

@@ -1,31 +1,14 @@
-import path from 'path';
-import db from '../config/db.js';
-import "../bootstrap/app.js";
-import { readdir } from 'fs/promises';
+import db from '../../config/db.js';
 import { Sequelize } from 'sequelize';
-import getFilesWithContents from './getFilesWithContents.js';
+import getFilesWithContents from '../getFilesWithContents.js';
+import getLastStep from './getLastStep.js';
+import getExecutedSeeds from './getExecutedSeeds.js';
 
 export default async function createSeedManager(dir) {
 
     const files = await getFilesWithContents(dir);
 
-    async function getLastStep() {
-        const res = await db.query('SELECT MAX(step) AS max FROM seeds');
-        const max = res.rows[0].max;
-        return (max ?? 0);
-    }
-
-    const executedSeeds = await (async function () {
-        const { rows } = await db.query('SELECT name, step FROM seeds ORDER BY id ASC');
-
-        const result = [];
-
-        for (const row of rows) {
-            result.push([row.name, row.step]);
-        }
-
-        return Object.fromEntries(result);
-    })();
+    const executedSeeds = await getExecutedSeeds();
 
     const lastStep = await getLastStep();
 

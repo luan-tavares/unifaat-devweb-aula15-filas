@@ -1,4 +1,4 @@
-import getFilesWithContents from './getFilesWithContents.js';
+import getFilesWithContents from '../getFilesWithContents.js';
 
 export default async function (dir, server) {
 

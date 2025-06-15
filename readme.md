@@ -103,27 +103,34 @@ Após rodar migrations e seeds, você pode subir um **worker/consumer** para esc
 ### ✅ Via Host (fora do container)
 
 ```sh
-node worker --queue=minha-fila
+node worker --queue=minha-fila --concurrency=1
 ```
-
-Substitua `"minha-fila"` pelo nome da fila desejada, como `emails`, `relatorios`, `webhooks`, etc.
 
 ### ✅ Via Docker (container efêmero)
 
 > Docker Compose tradicional:
 
 ```sh
-docker-compose run --rm nodeworker-container --queue=minha-fila
+docker-compose run --rm nodeworker-container --queue=minha-fila --concurrency=1
 ```
 
 > Docker Compose moderno:
 
 ```sh
-docker compose run --rm nodeworker-container --queue=minha-fila
+docker compose run --rm nodeworker-container --queue=minha-fila --concurrency=1
 ```
 
-⚠️ O parâmetro `--queue` será interpretado pelo `worker.js`.  
-Certifique-se de que ele lê `process.argv` e passa corretamente para `worker.listen(queue)`.
+⚠️ Argumentos cli
+
+***`--queue`***:<br>
+**Opcional**<br>
+Substitua `minha-fila` pelo nome da fila desejada, como `emails`, `relatorios`, `webhooks`, etc.<br>
+Caso o parâmetro não existir, ele conectará com a fila `default`
+
+***`--concurrency`***:<br>
+**Opcional**<br>
+Substitua `1` pelo quantidade de jobs que podem ser processados ao mesmo tempo **EM UM ÚNICO WORKER**.<br>
+Caso o parâmetro não existir, ele será `1`
 
 ---
 
@@ -172,7 +179,7 @@ Certifique-se de que ele lê `process.argv` e passa corretamente para `worker.li
 | `bootstrap/`                | Inicializações específicas do projeto, como setup global de helpers, constantes e variáveis de ambiente.                        |
 | `config/`                   | Arquivos de configuração para serviços como RabbitMQ, Postgres, JWT, Sequelize,  swagger, etc.                                 |
 | `Core/`                     | Núcleo do sistema, como se fosse uma lib interna criada por nós mesmos. Carrega bastante complexidade.    |
-| `Core/WorkerCore/`          | Lógica de workers: registro, execução, escuta de filas.                                                   |
+| `Core/QueueCore/`          | Lógica de workers: registro, execução, escuta de filas.                                                   |
 | `Core/CommandCore/`         | Execução e estrutura dos comandos CLI.                                                                   |
 | `Core/MigrationCore/`       | Lógica por trás das migrations via CLI.                                                                  |
 | `Core/SeedCore/`            | Lógica por trás das seeds via CLI.                                                                       |
