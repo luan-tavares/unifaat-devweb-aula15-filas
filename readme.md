@@ -319,9 +319,9 @@ Este projeto utiliza uma arquitetura baseada em múltiplos containers Docker, or
 
 | Container              | Imagem Base               | Função                                                                 | Porta Interna |
 |------------------------|---------------------------|------------------------------------------------------------------------|---------------|
-| `postgres-container`   | `postgres:15`             | Banco de dados PostgreSQL usado pela aplicação.                        | **5432**      |
-| `rabbitmq-container`   | `rabbitmq:3-management`   | Broker de mensagens AMQP (com UI Web em `/`).                          | **5672**, **15672** |
-| `nginx-container`      | `nginx:1.25-alpine`       | Proxy reverso que expõe a API HTTP para fora.                          | **80**      |
+| `postgres-container`   | `postgres:15`             | Banco de dados PostgreSQL usado pela aplicação.                        | 5432      |
+| `rabbitmq-container`   | `rabbitmq:3-management`   | Broker de mensagens AMQP (com UI Web em `/`).                          | 5672, 15672 |
+| `nginx-container`      | `nginx:1.25-alpine`       | Proxy reverso que expõe a API HTTP para fora.                          | 80      |
 
 ### 💾 Volumes Persistentes
 
@@ -346,7 +346,7 @@ Isso permite comunicação interna entre os serviços via `nome-do-container`.
 | Serviço     | Porta Interna | Porta Externa | Acesso Externo                      |
 |-------------|----------------|----------------|-------------------------------------|
 | NGINX       | 80             | **8080**       | http://localhost:8080               |
-| PostgreSQL  | 5432           | **6789**       | usado por clients/ORM               |
+| PostgreSQL  | 5432           | **6789**       | usado por clients (beekeeper, dbeaver, ...)/ORM/CLI               |
 | RabbitMQ    | 5672, 15672    | **2765**, **15672** | AMQP e painel web http://localhost:15672 |
 
 ---
