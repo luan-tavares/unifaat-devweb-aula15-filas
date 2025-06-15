@@ -309,11 +309,11 @@ Este projeto utiliza uma arquitetura baseada em múltiplos containers Docker, or
 
 ### 🔧 Containers da Aplicação
 
-| Container               | Dockerfile                             | Função                                                                 |
-|-------------------------|-----------------------------------------|------------------------------------------------------------------------|
-| `nodeweb-container`     | `docker/node-web/Dockerfile.dev`        | API HTTP principal (`server.js`). Exposto na porta **3000** (interna). |
-| `nodecli-container`     | `docker/node-cli/Dockerfile`            | Executa comandos como `migrate`, `seed`, `dispatch`. Container efêmero. |
-| `nodeworker-container`  | `docker/node-worker/Dockerfile`         | Worker que consome jobs da fila RabbitMQ.                              |
+| Container               | Dockerfile                             | Função                                                                 | Porta Interna |
+|-------------------------|-----------------------------------------|------------------------------------------------------------------------|-------|
+| `nodeweb-container`     | `docker/node-web/Dockerfile.dev`        | API HTTP principal (`server.js`). | 3000 |
+| `nodecli-container`     | `docker/node-cli/Dockerfile`            | Executa comandos como `migrate`, `seed`, `dispatch`. Container efêmero. | - |
+| `nodeworker-container`  | `docker/node-worker/Dockerfile`         | Worker que consome jobs da fila RabbitMQ.                              | - |
 
 ### 🗄️ Containers de Infraestrutura
 
@@ -321,7 +321,7 @@ Este projeto utiliza uma arquitetura baseada em múltiplos containers Docker, or
 |------------------------|---------------------------|------------------------------------------------------------------------|---------------|
 | `postgres-container`   | `postgres:15`             | Banco de dados PostgreSQL usado pela aplicação.                        | **5432**      |
 | `rabbitmq-container`   | `rabbitmq:3-management`   | Broker de mensagens AMQP (com UI Web em `/`).                          | **5672**, **15672** |
-| `nginx-container`      | `nginx:1.25-alpine`       | Proxy reverso que expõe a API HTTP para fora.                          | **8080**      |
+| `nginx-container`      | `nginx:1.25-alpine`       | Proxy reverso que expõe a API HTTP para fora.                          | **80**      |
 
 ### 💾 Volumes Persistentes
 
