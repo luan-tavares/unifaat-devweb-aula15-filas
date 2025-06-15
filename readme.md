@@ -351,4 +351,6 @@ Isso permite comunicação interna entre os serviços via `nome-do-container`.
 
 ---
 
+![Diagrama da rede Docker](./rede-docker.jpeg)
+
 Essas definições estão configuradas em `docker-compose.yml` e os arquivos de build estão em `./docker/`.
