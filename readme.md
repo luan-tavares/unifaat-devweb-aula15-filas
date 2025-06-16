@@ -13,6 +13,7 @@
 - [Acesse](#acesse)
 - [📦 Bibliotecas Utilizadas](#bibliotecas-utilizadas)
 - [📁 Estrutura de Diretórios (raiz)](#estrutura-de-diretorios-raiz)
+- [🧾 Como Criar um Novo Documento Swagger](#swagger)
 - [🐳 Containers e Imagens Docker](#containers-e-imagens-docker)
 
 ## Instalação e Execução <a name="instalacao-e-execucao"></a>
@@ -302,6 +303,117 @@ Se não for informado, o padrão é `1`.
 | `readme.md`                 | Documentação principal do projeto (este arquivo).                                                         |
 | `server.js`                 | Entry point HTTP da aplicação. Sobe o Express e inicializa a API.                                         |
 | `worker`                    | Entrypoint dos workers/consumers. Sobe escutando filas específicas do RabbitMQ.                           |
+
+
+## 🧾 Como Criar um Novo Documento Swagger<a name="swagger"></a>
+
+Este projeto utiliza o Swagger para documentar a API de forma modular. Cada grupo de endpoints possui um arquivo `.js` dentro do diretório `docs/`, e todos são unidos dinamicamente pelo `SwaggerCore`.
+
+### 🗂 Estrutura esperada
+
+```
+docs/
+├── 01-loginDoc.js
+├── 02-colaboradorDoc.js
+├── ...
+```
+
+### 🧑‍💻 Criando um novo arquivo de documentação
+
+1. **Nomeie o arquivo com prefixo numérico e sufixo `Doc.js`**  
+   Isso ajuda a manter a ordem desejada no Swagger final. Exemplo:
+   ```bash
+   07-relatorioDoc.js
+   ```
+
+2. **Exporte um objeto no formato OpenAPI (Swagger 3.0)**  
+   Use o seguinte modelo como base:
+
+   ```js
+   export default {
+     "/minha-rota": {
+       post: {
+         summary: "Descrição breve da rota",
+         description: "Explicação completa do que a rota faz.",
+         tags: ["Categoria"], // Ex: ["Usuários", "Projetos"]
+         requestBody: {
+           required: true,
+           content: {
+             "application/json": {
+               schema: {
+                 type: "object",
+                 properties: {
+                   campo1: {
+                     type: "string",
+                     description: "Descrição do campo",
+                     example: "valorExemplo"
+                   },
+                   campo2: {
+                     type: "integer",
+                     description: "Outro campo",
+                     example: 123
+                   }
+                 },
+                 required: ["campo1", "campo2"]
+               }
+             }
+           }
+         },
+         responses: {
+           200: {
+             description: "Resposta de sucesso",
+             content: {
+               "application/json": {
+                 schema: {
+                   type: "object",
+                   properties: {
+                     resultado: {
+                       type: "string",
+                       description: "Exemplo de retorno"
+                     }
+                   }
+                 }
+               }
+             }
+           }
+         }
+       }
+     }
+   };
+   ```
+
+3. **Salvar o arquivo em `./docs/`**
+
+4. **O Swagger será montado automaticamente**  
+   A montagem ocorre no endpoint `/docs`, geralmente configurado assim:
+
+   ```js
+   router.use('/docs', swaggerUi.serve, swaggerGenerate);
+   ```
+
+   O SwaggerCore percorre os arquivos `.js` no diretório `docs/`, importa e junta todos os objetos exportados em um único schema OpenAPI.
+
+---
+
+## ✅ Boas práticas
+
+- **Tags:** Use `tags` para agrupar endpoints no Swagger UI.
+- **Exemplos:** Sempre preencha o campo `example` para facilitar o entendimento visual.
+- **Validação:** Certifique-se de incluir todos os campos obrigatórios em `required`.
+
+---
+
+## 🧪 Testando
+
+Após criar/modificar qualquer arquivo em `docs/`, acesse:
+
+```
+http://localhost:<porta>/docs
+```
+
+E verifique se seu endpoint aparece corretamente e com as informações esperadas.
+```
+
 
 ## 🐳 Containers e Imagens Docker <a name="containers-e-imagens-docker"></a>
 
