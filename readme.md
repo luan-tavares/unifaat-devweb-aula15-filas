@@ -412,7 +412,6 @@ http://localhost:<porta>/docs
 ```
 
 E verifique se seu endpoint aparece corretamente e com as informações esperadas.
-```
 
 
 ## 🐳 Containers e Imagens Docker <a name="containers-e-imagens-docker"></a>
