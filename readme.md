@@ -3,18 +3,22 @@
 ## 📑 Sumário
 
 - [Instalação e Execução](#instalacao-e-execucao)
+- [Acesse](#acesse)
 - [🚀 Como Criar Elementos](#como-criar-elementos)
   - [🧩 Criar uma Rota](#criar-uma-rota)
   - [📦 Criar um Controller](#criar-um-controller)
   - [⛓️ Criar um Middleware](#criar-um-middleware)
   - [🧵 Criar um Job](#criar-um-job)
   - [💻 Criar um Command](#criar-um-command)
+  - [📦 Migrations do Projeto](#migrations)
+  - [🌱 Seeds do Projeto](#seeds)
 - [🧵 Subindo um Worker (Consumer)](#subindo-um-worker-consumer)
-- [Acesse](#acesse)
 - [📦 Bibliotecas Utilizadas](#bibliotecas-utilizadas)
 - [📁 Estrutura de Diretórios (raiz)](#estrutura-de-diretorios-raiz)
 - [🧾 Como Criar um Novo Documento Swagger](#swagger)
 - [🐳 Containers e Imagens Docker](#containers-e-imagens-docker)
+
+---
 
 ## Instalação e Execução <a name="instalacao-e-execucao"></a>
 
@@ -116,6 +120,17 @@
    node command seed
    ```
 
+---
+
+## Acesse <a name="acesse"></a>
+
+- Servidor: [http://localhost:8080](http://localhost:8080)
+- Documentação da API: [http://localhost:8080/docs](http://localhost:8080/docs)
+
+**Importante:** O arquivo `./Insomnia.yml` DEVE ser utilizado no Insomnia para testar as rotas.
+
+---
+
 ## 🚀 Como Criar Elementos <a name="como-criar-elementos"></a>
 
 ### 🧩 Criar uma Rota <a name="criar-uma-rota"></a>
@@ -207,6 +222,149 @@ export default {
 node command meu-comando
 ```
 
+---
+
+### 📦 Migrations do Projeto <a name="migrations"></a>
+
+As migrations deste projeto são responsáveis por versionar a estrutura do banco de dados de forma incremental e ordenada por data.
+
+#### 📁 Localização
+
+Todos os arquivos de migrations ficam em:
+
+```
+./database/migrations
+```
+
+#### 📄 Formato do Arquivo
+
+Cada migration segue o seguinte padrão de nomenclatura:
+
+```
+YYYY_MM_DD_HH_MM_SS_nome_descritivo.js
+```
+
+Exemplo:
+
+```
+2025_06_07_00_00_00_create_roles_table.js
+```
+
+#### 🧬 Estrutura do Código
+
+Cada migration exporta dois métodos assíncronos: `up()` e `down()`.
+```js
+import db from '../../config/db.js';
+
+async function up() {
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS roles (
+        id SERIAL PRIMARY KEY,
+        nome VARCHAR(155) UNIQUE NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+}
+
+async function down() {
+  await db.query(`DROP TABLE roles;`);
+}
+
+export default { up, down };
+```
+
+#### 🛠 Como Criar uma Nova Migration
+
+1. **Defina um nome descritivo e a hora atual no início**  
+2. **Implemente as funções `up()` e `down()`**  
+3. **Salve o arquivo em `./database/migrations`**
+
+#### 🚀 Execução das Migrations
+
+A execução é feita via CLI e respeita a ordem de timestamp.
+
+#### ✅ Boas Práticas
+
+- Uma migration por alteração
+- Sempre implemente `down()`
+- Não altere migrations antigas
+
+---
+
+### 🌱 Seeds do Projeto <a name="seeds"></a>
+
+Seeds são scripts responsáveis por popular o banco de dados com dados iniciais ou de teste.
+
+#### 📁 Localização
+
+```
+./database/seeds/
+```
+
+#### 🧾 Nome do Arquivo
+
+```
+001_roles_and_users.js
+002_outra_seed.js
+...
+```
+
+#### 🧬 Estrutura do Arquivo
+
+```js
+import bcrypt from 'bcrypt';
+import RoleModel from '../../app/Models/RoleModel.js';
+import UserModel from '../../app/Models/UserModel.js';
+
+export default {
+    up: async () => {
+        const rows = await RoleModel.bulkCreate([
+            { nome: 'ROLE_ADMIN' },
+            { nome: 'ROLE_USER' }
+        ]);
+
+        const senha = "123456";
+
+        await UserModel.bulkCreate([
+            { nome: 'User1', email: 'user1@example.com', id_role: rows[0].id, senha: await bcrypt.hash(senha, 10) },
+            { nome: 'User2', email: 'user2@example.com', id_role: rows[1].id, senha: await bcrypt.hash(senha, 10) },
+        ])
+    },
+
+    down: async () => {
+        await UserModel.destroy({
+            where: {
+                email: ['user1@example.com', 'user2@example.com']
+            }
+        });
+
+        await RoleModel.destroy({
+            where: {
+                nome: ['ROLE_ADMIN', 'ROLE_USER']
+            }
+        });
+    }
+};
+```
+
+#### ⚠️ Importante
+
+Execute as migrations antes das seeds.
+
+#### 🚀 Execução das Seeds
+
+Ordena os arquivos e executa `up()`, com suporte a rollback via `down()`.
+
+#### ✅ Boas Práticas
+
+- Escopo pequeno por seed
+- Sempre implemente `down()`
+- Não reutilize emails/names
+- Não use em lógica de produção
+
+---
+
 ## 🧵 Subindo um Worker (Consumer) <a name="subindo-um-worker-consumer"></a>
 
 Após rodar migrations e seeds, você pode subir um worker (consumer) para escutar uma fila específica e processar os jobs associados.
@@ -230,20 +388,13 @@ docker compose run --rm nodeworker-container --queue=minha-fila --concurrency=1
 
 ⚙️ Argumentos CLI:
 
-**--queue (opcional)**
-Substitua `minha-fila` pelo nome da fila desejada, como `emails`, `relatorios`, `webhooks`, etc.  
-Se não for informado, usará a fila `default`.
+**--queue (opcional)**  
+Se não informado, usará a fila `default`.
 
 **--concurrency (opcional)**  
-Define quantos jobs podem ser processados ao mesmo tempo por esse worker.  
-Se não for informado, o padrão é `1`.
+Define quantos jobs paralelos esse worker processa.
 
-## Acesse <a name="acesse"></a>
-
-- Servidor: [http://localhost:8080](http://localhost:8080)
-- Documentação da API: [http://localhost:8080/docs](http://localhost:8080/docs)
-
-**Importante:** O arquivo `./Insomnia.yml` DEVE ser utilizado no Insomnia para testar as rotas.
+---
 
 ## 📦 Bibliotecas Utilizadas <a name="bibliotecas-utilizadas"></a>
 
@@ -264,6 +415,8 @@ Se não for informado, o padrão é `1`.
 | `axios`               | Cliente HTTP para fazer requisições a APIs externas.                       |
 | `amqplib`             | Biblioteca cliente para comunicação com RabbitMQ via protocolo AMQP.       |
 | `nodemon`             | Ferramenta que reinicia automaticamente a aplicação ao detectar mudanças.  |
+
+---
 
 ## 📁 Estrutura de Diretórios (raiz) <a name="estrutura-de-diretorios-raiz"></a>
 
@@ -304,6 +457,7 @@ Se não for informado, o padrão é `1`.
 | `server.js`                 | Entry point HTTP da aplicação. Sobe o Express e inicializa a API.                                         |
 | `worker`                    | Entrypoint dos workers/consumers. Sobe escutando filas específicas do RabbitMQ.                           |
 
+---
 
 ## 🧾 Como Criar um Novo Documento Swagger<a name="swagger"></a>
 
@@ -321,102 +475,13 @@ docs/
 ### 🧑‍💻 Criando um novo arquivo de documentação
 
 1. **Nomeie o arquivo com prefixo numérico e sufixo `Doc.js`**  
-   Isso ajuda a manter a ordem desejada no Swagger final. Exemplo:
-   ```bash
-   07-relatorioDoc.js
-   ```
-
 2. **Exporte um objeto no formato OpenAPI (Swagger 3.0)**  
-   Use o seguinte modelo como base:
-
-   ```js
-   export default {
-     "/minha-rota": {
-       post: {
-         summary: "Descrição breve da rota",
-         description: "Explicação completa do que a rota faz.",
-         tags: ["Categoria"], // Ex: ["Usuários", "Projetos"]
-         requestBody: {
-           required: true,
-           content: {
-             "application/json": {
-               schema: {
-                 type: "object",
-                 properties: {
-                   campo1: {
-                     type: "string",
-                     description: "Descrição do campo",
-                     example: "valorExemplo"
-                   },
-                   campo2: {
-                     type: "integer",
-                     description: "Outro campo",
-                     example: 123
-                   }
-                 },
-                 required: ["campo1", "campo2"]
-               }
-             }
-           }
-         },
-         responses: {
-           200: {
-             description: "Resposta de sucesso",
-             content: {
-               "application/json": {
-                 schema: {
-                   type: "object",
-                   properties: {
-                     resultado: {
-                       type: "string",
-                       description: "Exemplo de retorno"
-                     }
-                   }
-                 }
-               }
-             }
-           }
-         }
-       }
-     }
-   };
-   ```
-
 3. **Salvar o arquivo em `./docs/`**
-
-4. **O Swagger será montado automaticamente**  
-   A montagem ocorre no endpoint `/docs`, geralmente configurado assim:
-
-   ```js
-   router.use('/docs', swaggerUi.serve, swaggerGenerate);
-   ```
-
-   O SwaggerCore percorre os arquivos `.js` no diretório `docs/`, importa e junta todos os objetos exportados em um único schema OpenAPI.
+4. **O Swagger será montado automaticamente**
 
 ---
-
-## ✅ Boas práticas
-
-- **Tags:** Use `tags` para agrupar endpoints no Swagger UI.
-- **Exemplos:** Sempre preencha o campo `example` para facilitar o entendimento visual.
-- **Validação:** Certifique-se de incluir todos os campos obrigatórios em `required`.
-
----
-
-## 🧪 Testando
-
-Após criar/modificar qualquer arquivo em `docs/`, acesse:
-
-```
-http://localhost:<porta>/docs
-```
-
-E verifique se seu endpoint aparece corretamente e com as informações esperadas.
-
 
 ## 🐳 Containers e Imagens Docker <a name="containers-e-imagens-docker"></a>
-
-Este projeto utiliza uma arquitetura baseada em múltiplos containers Docker, orquestrados via Docker Compose. Abaixo está a descrição de cada serviço, imagem, volume e porta exposta.
 
 ### 🔧 Containers da Aplicação
 
@@ -450,8 +515,6 @@ Todos os containers estão conectados à rede Docker personalizada:
 project-network
 ```
 
-Isso permite comunicação interna entre os serviços via `nome-do-container`.
-
 ### 🌍 Portas Expostas Externamente
 
 | Serviço     | Porta Interna | Porta Externa | Acesso Externo                      |
@@ -464,4 +527,3 @@ Isso permite comunicação interna entre os serviços via `nome-do-container`.
 
 ![Diagrama da rede Docker](./rede-docker.jpeg)
 
-Essas definições estão configuradas em `docker-compose.yml` e os arquivos de build estão em `./docker/`.
