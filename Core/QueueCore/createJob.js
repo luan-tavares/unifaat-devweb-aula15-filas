@@ -25,7 +25,7 @@ export default function createJob(job) {
          */
         const message = {
             job: jobName,
-            payload,
+            payload: payload,
         };
 
         /** 
